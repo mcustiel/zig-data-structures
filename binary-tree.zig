@@ -297,22 +297,13 @@ fn TraverseCallback(comptime expected: []const i8) type {
 
 fn SearchCallback(comptime search: i8) type {
     return struct {
-        const Self = @This();
-
         var iteration: u8 = 0;
         var searchValue: i8 = search;
-        callback: *const fn (val: i8) CallbackError!bool,
 
-        fn _callback(val: i8) CallbackError!bool {
+        pub fn callback(val: i8) CallbackError!bool {
             const ret: bool = searchValue != val;
             iteration += 1;
             return ret;
-        }
-
-        pub fn create() Self {
-            return Self{
-                .callback = Self._callback,
-            };
         }
 
         pub fn visitedNodesCount() u8 {
@@ -365,31 +356,9 @@ test "traverse binary tree with stop: InOrder - Recursive" {
     const values = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
     inline for (values, 0..) |value, i| {
         const callbackStruct = SearchCallback(value);
-        try btree.traverseInOrderRecursive(callbackStruct.create().callback);
+        try btree.traverseInOrderRecursive(callbackStruct.callback);
         try testing.expectEqual(callbackStruct.visitedNodesCount(), i + 1);
     }
-
-    // comptime var callbackStruct = SearchCallback(17);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 7);
-    // callbackStruct = SearchCallback(15);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 6);
-    // callbackStruct = SearchCallback(12);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 5);
-    // callbackStruct = SearchCallback(10);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 4);
-    // callbackStruct = SearchCallback(8);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 3);
-    // callbackStruct = SearchCallback(5);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 2);
-    // callbackStruct = SearchCallback(3);
-    // try btree.traverseInOrderRecursive(callbackStruct.create().callback);
-    // try testing.expectEqual(callbackStruct.visitedNodesCount(), 1);
 }
 
 test "traverse binary tree: InOrder - Iterative" {
