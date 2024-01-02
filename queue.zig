@@ -3,7 +3,7 @@ const dbg = std.debug;
 const Allocator = std.mem.Allocator;
 const testing = std.testing;
 
-const list = @import("./list.zig");
+const list = @import("./singly-linked-list.zig");
 
 pub fn Queue(comptime T: type, comptime comparatorFn: *const fn (a: T, b: T) i2) type {
     return struct {

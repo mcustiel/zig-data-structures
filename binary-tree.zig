@@ -272,25 +272,20 @@ test "insert into binary search tree" {
 const CallbackError = error{
     TestFailed,
 };
+
 fn TraverseCallback(comptime expected: []const i8) type {
     return struct {
-        const Self = @This();
-
         var iteration: u8 = 0;
         var expectedValues: []const i8 = expected;
-        callback: *const fn (val: i8) CallbackError!bool,
 
-        fn _callback(val: i8) CallbackError!bool {
+        pub fn callback(val: i8) CallbackError!bool {
             testing.expectEqual(expectedValues[iteration], val) catch return CallbackError.TestFailed;
             iteration += 1;
             return true;
         }
 
-        pub fn create() Self {
+        pub fn init() void {
             iteration = 0;
-            return Self{
-                .callback = Self._callback,
-            };
         }
     };
 }
@@ -308,6 +303,10 @@ fn SearchCallback(comptime search: i8) type {
 
         pub fn visitedNodesCount() u8 {
             return iteration;
+        }
+
+        pub fn init() void {
+            iteration = 0;
         }
     };
 }
@@ -331,7 +330,8 @@ test "traverse binary tree: InOrder - Recursive" {
     try btree.insertBST(3);
 
     const expected = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
-    const callbackStruct = TraverseCallback(expected[0..]).create();
+    const callbackStruct = TraverseCallback(expected[0..]);
+    callbackStruct.init();
     try btree.traverseInOrderRecursive(callbackStruct.callback);
 }
 
@@ -356,6 +356,7 @@ test "traverse binary tree with stop: InOrder - Recursive" {
     const values = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
     inline for (values, 0..) |value, i| {
         const callbackStruct = SearchCallback(value);
+        callbackStruct.init();
         try btree.traverseInOrderRecursive(callbackStruct.callback);
         try testing.expectEqual(callbackStruct.visitedNodesCount(), i + 1);
     }
@@ -380,9 +381,37 @@ test "traverse binary tree: InOrder - Iterative" {
     try btree.insertBST(3);
 
     const expected = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
-    const callbackStruct = TraverseCallback(expected[0..]).create();
+    const callbackStruct = TraverseCallback(expected[0..]);
+    callbackStruct.init();
     try btree.traverseInOrderIterative(callbackStruct.callback);
 }
+
+// test "traverse binary tree with stop: InOrder - Iterative" {
+//     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+//     defer arena.deinit();
+//     const allocator = arena.allocator();
+//
+//     const I8BinaryTree = BinaryTree(i8, i8comparator);
+//     var btree = I8BinaryTree.create(allocator);
+//
+//     try testing.expectEqual(true, btree.isEmpty());
+//     try btree.insertBST(10);
+//     try testing.expectEqual(false, btree.isEmpty());
+//     try btree.insertBST(15);
+//     try btree.insertBST(5);
+//     try btree.insertBST(12);
+//     try btree.insertBST(17);
+//     try btree.insertBST(8);
+//     try btree.insertBST(3);
+//
+//     const values = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
+//     inline for (values, 0..) |value, i| {
+//         const callbackStruct = SearchCallback(value);
+//         callbackStruct.init();
+//         try btree.traverseInOrderIterative(callbackStruct.callback);
+//         try testing.expectEqual(callbackStruct.visitedNodesCount(), i + 1);
+//     }
+// }
 
 test "traverse binary tree: PreOrder - Recursive" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -403,7 +432,8 @@ test "traverse binary tree: PreOrder - Recursive" {
     try btree.insertBST(3);
 
     const expected = [7]i8{ 10, 5, 3, 8, 15, 12, 17 };
-    const callbackStruct = TraverseCallback(expected[0..]).create();
+    const callbackStruct = TraverseCallback(expected[0..]);
+    callbackStruct.init();
     try btree.traversePreOrderRecursive(callbackStruct.callback);
 }
 
@@ -426,7 +456,8 @@ test "traverse binary tree: PreOrder - Iterative" {
     try btree.insertBST(3);
 
     const expected = [7]i8{ 10, 5, 3, 8, 15, 12, 17 };
-    const callbackStruct = TraverseCallback(expected[0..]).create();
+    const callbackStruct = TraverseCallback(expected[0..]);
+    callbackStruct.init();
     try btree.traversePreOrderIterative(callbackStruct.callback);
 }
 
@@ -449,6 +480,7 @@ test "traverse binary tree: BFS" {
     try btree.insertBST(3);
 
     const expected = [7]i8{ 10, 5, 15, 3, 8, 12, 17 };
-    const callbackStruct = TraverseCallback(expected[0..]).create();
+    const callbackStruct = TraverseCallback(expected[0..]);
+    callbackStruct.init();
     try btree.traverseBFS(callbackStruct.callback);
 }

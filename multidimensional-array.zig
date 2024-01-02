@@ -1,6 +1,5 @@
 const std = @import("std");
 const dbg = std.debug;
-// const Allocator = std.mem.Allocator;
 const testing = std.testing;
 
 pub fn MultidimensionalArray(comptime T: type) type {
