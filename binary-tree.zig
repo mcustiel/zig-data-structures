@@ -106,14 +106,22 @@ pub fn BinaryTree(comptime T: type, comptime comparatorFn: *const fn (a: T, b: T
             var nodeStack: TStack = TStack.create(self._allocator);
             try nodeStack.push(self._root.?);
             tmp = self._root.?.left;
+            var finished: bool = false;
 
-            while (!nodeStack.isEmpty()) {
+            while (!finished) {
                 if (tmp != null) {
                     try nodeStack.push(tmp.?);
                     tmp = tmp.?.left;
                 } else {
+                    if (nodeStack.isEmpty()) {
+                        finished = true;
+                        continue;
+                    }
                     tmp = try nodeStack.pop();
-                    if (!try callback(tmp.?.val)) return;
+                    if (!try callback(tmp.?.val)) {
+                        dbg.print("Returning because callback says so\n", .{});
+                        return;
+                    }
                     tmp = tmp.?.right;
                 }
             }
@@ -386,32 +394,32 @@ test "traverse binary tree: InOrder - Iterative" {
     try btree.traverseInOrderIterative(callbackStruct.callback);
 }
 
-// test "traverse binary tree with stop: InOrder - Iterative" {
-//     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-//     defer arena.deinit();
-//     const allocator = arena.allocator();
-//
-//     const I8BinaryTree = BinaryTree(i8, i8comparator);
-//     var btree = I8BinaryTree.create(allocator);
-//
-//     try testing.expectEqual(true, btree.isEmpty());
-//     try btree.insertBST(10);
-//     try testing.expectEqual(false, btree.isEmpty());
-//     try btree.insertBST(15);
-//     try btree.insertBST(5);
-//     try btree.insertBST(12);
-//     try btree.insertBST(17);
-//     try btree.insertBST(8);
-//     try btree.insertBST(3);
-//
-//     const values = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
-//     inline for (values, 0..) |value, i| {
-//         const callbackStruct = SearchCallback(value);
-//         callbackStruct.init();
-//         try btree.traverseInOrderIterative(callbackStruct.callback);
-//         try testing.expectEqual(callbackStruct.visitedNodesCount(), i + 1);
-//     }
-// }
+test "traverse binary tree with stop: InOrder - Iterative" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    const I8BinaryTree = BinaryTree(i8, i8comparator);
+    var btree = I8BinaryTree.create(allocator);
+
+    try testing.expectEqual(true, btree.isEmpty());
+    try btree.insertBST(10);
+    try testing.expectEqual(false, btree.isEmpty());
+    try btree.insertBST(15);
+    try btree.insertBST(5);
+    try btree.insertBST(12);
+    try btree.insertBST(17);
+    try btree.insertBST(8);
+    try btree.insertBST(3);
+
+    const values = [7]i8{ 3, 5, 8, 10, 12, 15, 17 };
+    inline for (values, 0..) |value, i| {
+        const callbackStruct = SearchCallback(value);
+        callbackStruct.init();
+        try btree.traverseInOrderIterative(callbackStruct.callback);
+        try testing.expectEqual(callbackStruct.visitedNodesCount(), i + 1);
+    }
+}
 
 test "traverse binary tree: PreOrder - Recursive" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
