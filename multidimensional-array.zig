@@ -77,7 +77,7 @@ test "get" {
 
     while (i < 2) : (i += 1) {
         while (j < 2) : (j += 1) {
-            val = array.get(&[2]u3{ i, j });
+            val = array.get(.{ i, j });
             try testing.expectEqual(data[cur], val);
             cur += 1;
         }
@@ -97,13 +97,13 @@ test "set" {
 
     while (i < 2) : (i += 1) {
         while (j < 2) : (j += 1) {
-            array.set(&[2]u3{ i, j }, i * 2 + j);
+            array.set(.{ i, j }, i * 2 + j);
         }
     }
 
     while (i < 2) : (i += 1) {
         while (j < 2) : (j += 1) {
-            val = array.get(&[2]u3{ i, j });
+            val = array.get(.{ i, j });
             try testing.expectEqual(@as(i8, i * 2 + j), val);
         }
     }
